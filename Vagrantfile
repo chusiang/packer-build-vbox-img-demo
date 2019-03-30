@@ -1,43 +1,53 @@
 # -*- mode: ruby -*-
-# vi: set ft=ruby :
+
+PUBLIC_NETWORK_INTERFACE = "en4: Thunderbolt Ethernet"
+HOST = "192.168.1.150"
 
 Vagrant.configure("2") do |config|
+  config.vm.box = "centos7-1810"
 
-  # VirtualBox.
-  config.vm.define "virtualbox" do |virtualbox|
-    virtualbox.vm.hostname = "virtualbox-centos7"
-    virtualbox.vm.box = "packer-demo"
-    virtualbox.vm.network "public_network", bridge: "en0: Wi-Fi (AirPort)"
-    virtualbox.vm.synced_folder '.', '/vagrant', disabled: true
-    config.ssh.host = "10.0.0.150"
-    config.ssh.username = "root"
-    config.ssh.password = '1qaz!QAZ'
-    config.vm.provision "shell", inline: "echo Hello, World"
+  config.vm.hostname = "virtualbox-centos7"
+  config.vm.synced_folder '.', '/vagrant', disabled: true
 
-    config.ssh.insert_key = false
+  config.vm.network "public_network", bridge: + PUBLIC_NETWORK_INTERFACE
+  config.ssh.host = HOST
 
-    config.vm.provision :ansible do |ansible|
-      ansible.limit = "all"
-      ansible.playbook = "./ansible/demo.yml"
-      ansible.host_key_checking = "false"
-      ansible.force_remote_user = "root"
-    end
+  # Custom account.
+  config.ssh.username = "root"
+  config.ssh.password = "3qaz!QAZ"
 
-    config.vm.provider :virtualbox do |v|
-      v.gui = true
-      v.cpus = 1
-      v.memory = 1024
-      v.customize ["modifyvm", :id, "--nic1", "bridged"]
-      v.customize ["modifyvm", :id, "--nictype1", "82540EM"]
-      v.customize ["modifyvm", :id, "--cableconnected1", "on"]
-      v.customize ["modifyvm", :id, "--nictrace1", "off"]
-      v.customize ["modifyvm", :id, "--bridgeadapter1", "en1: Wi-Fi (AirPort)"]
-      v.customize ["modifyvm", :id, "--macaddress1", "auto"]
-      v.customize ["modifyvm", :id, "--usb", "off"]
-      v.customize ["modifyvm", :id, "--audio", "none"]
-    end
+  # For support the ansible provision.
+  config.ssh.insert_key = true
 
+  # provision
+  ###########
+
+  # 1. Provision via VBoxManage cli.
+  config.vm.provider :virtualbox do |v|
+    v.linked_clone = true
+    #v.gui = true
+    v.cpus = 2
+    v.memory = 2048
+    v.customize ["modifyvm", :id, "--usb", "off"]
+    v.customize ["modifyvm", :id, "--audio", "none"]
+
+    # Network.
+    v.customize ["modifyvm", :id, "--nic1", "bridged"]
+    v.customize ["modifyvm", :id, "--nictype1", "82540EM"]
+    v.customize ["modifyvm", :id, "--cableconnected1", "on"]
+    v.customize ["modifyvm", :id, "--nictrace1", "off"]
+    v.customize ["modifyvm", :id, "--bridgeadapter1", + PUBLIC_NETWORK_INTERFACE]
+    v.customize ["modifyvm", :id, "--macaddress1", "auto"]
   end
 
+  # 2. Provision via shell.
+  config.vm.provision "shell", inline: "echo Hello, World"
+
+  # 3. Provision via Ansible Playbook.
+  config.vm.provision :ansible do |ansible|
+    ansible.playbook = "./demo.yml"
+    ansible.become = true
+  end
 end
 
+# vi: set ft=ruby :
