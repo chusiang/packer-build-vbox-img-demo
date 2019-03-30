@@ -1,0 +1,2 @@
+[all]
+virtualbox ansible_host=10.0.0.150 ansible_port=22 ansible_user=root ansible_ssh_pass=1qaz!QAZ
