@@ -1,11 +1,11 @@
 {
   "variables": {
-    "vm_name": "node1",
+    "vm_name": "centos7-1810",
     "guest_os_type": "RedHat_64",
-    "iso_url": "/Users/daniel/Downloads/CentOS-7-x86_64-Minimal-1810.iso",
+    "iso_url": "/Volumes/transcend/CentOS-7-x86_64-Minimal-1810.iso",
     "iso_checksum": "38d5d51d9d100fd73df031ffd6bd8b1297ce24660dc8c13a3b8b4534a4bd291c",
     "iso_checksum_type": "sha256",
-    "ssh_host": "10.0.0.150"
+    "ssh_host": "192.168.1.150"
   },
   "_description": "Build",
   "builders": [
@@ -37,7 +37,7 @@
         ["modifyvm", "{{.Name}}", "--nictype1", "82540EM"],
         ["modifyvm", "{{.Name}}", "--cableconnected1", "on"],
         ["modifyvm", "{{.Name}}", "--nictrace1", "off"],
-        ["modifyvm", "{{.Name}}", "--bridgeadapter1", "en1: Wi-Fi (AirPort)"],
+        ["modifyvm", "{{.Name}}", "--bridgeadapter1", "en4: Thunderbolt Ethernet"],
         ["modifyvm", "{{.Name}}", "--macaddress1", "auto"]
       ],
       "http_directory": "./http/",
